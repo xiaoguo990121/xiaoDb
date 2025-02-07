@@ -1,0 +1,4 @@
+C:/Users/Administrator/Desktop/xiaoItem/xiaoDb/build/CMakeFiles/xiaodb.dir
+C:/Users/Administrator/Desktop/xiaoItem/xiaoDb/build/CMakeFiles/xiaodb-shared.dir
+C:/Users/Administrator/Desktop/xiaoItem/xiaoDb/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/Administrator/Desktop/xiaoItem/xiaoDb/build/CMakeFiles/ZERO_CHECK.dir
