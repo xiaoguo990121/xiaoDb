@@ -1,0 +1,10 @@
+^C:\USERS\ADMINISTRATOR\DESKTOP\XIAOITEM\XIAODB\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Administrator/Desktop/xiaoItem/xiaoDb -BC:/Users/Administrator/Desktop/xiaoItem/xiaoDb/build --check-stamp-file C:/Users/Administrator/Desktop/xiaoItem/xiaoDb/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
