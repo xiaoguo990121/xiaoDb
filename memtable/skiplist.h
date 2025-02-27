@@ -84,7 +84,7 @@ namespace XIAODB_NAMESPACE
         Node **prev_;
         int32_t prev_height_;
 
-        inline int GewMaxHeight() const
+        inline int GetMaxHeight() const
         {
             return max_height_.load(std::memory_order_relaxed);
         }
@@ -120,9 +120,9 @@ namespace XIAODB_NAMESPACE
     {
         explicit Node(const Key &k) : key(k) {}
 
-        Key const key;
+        Key const key; // 跳表节点的数据
 
-        Node *Next(int n)
+        Node *Next(int n) // 返回当前节点在第n层的后继节点
         {
             assert(n >= 0);
             return (next_[n].load(std::memory_order_acquire));
@@ -307,7 +307,7 @@ namespace XIAODB_NAMESPACE
     typename SkipList<Key, Comparator>::Node *
     SkipList<Key, Comparator>::FindLessThan(const Key &key, Node **prev) const
     {
-        Node *x = head_;
+        Node *x = head_; // 从跳表头结点开始
         int level = GetMaxHeight() - 1;
         // KeyIsAfter(key, last_not_after) is definitely false
         Node *last_not_after = nullptr;

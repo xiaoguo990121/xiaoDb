@@ -1,5 +1,5 @@
-#pragma once
 
+#pragma once
 #include "xiaodb/configurable.h"
 #include "xiaodb/status.h"
 

@@ -18,6 +18,8 @@ namespace XIAODB_NAMESPACE
 
         const Comparator *user_comparator() const { return user_comparator_; }
 
+        int Compare()
+
     private:
         const Comparator *user_comparator_;
     };

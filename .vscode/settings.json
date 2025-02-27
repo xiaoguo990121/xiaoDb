@@ -74,6 +74,8 @@
         "queue": "cpp",
         "random": "cpp",
         "ranges": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "set": "cpp",
+        "stack": "cpp"
     }
 }

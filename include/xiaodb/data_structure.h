@@ -15,6 +15,9 @@ namespace XIAODB_NAMESPACE
         int CountTrailingZeroBitsForSmallEnumSet(uint64_t);
     }
 
+    // Represents a set of values of some enum type with a small number of
+    // possible enumerators. For now, it supports enums where no enumerator
+    // exceeds 63 when converted to int.
     template <typename ENUM_TYPE, ENUM_TYPE MAX_ENUMERATOR>
     class SmallEnumSet
     {

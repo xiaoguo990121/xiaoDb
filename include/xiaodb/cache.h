@@ -16,34 +16,80 @@ namespace XIAODB_NAMESPACE
     struct ConfigOptions;
     class SecondaryCache;
 
+    // These definitions begin source compatibility for a future change in which
+    // a specific class for block cache is split away from general caches, so that
+    // the block cache API can continue to become more specialized and
+    // customizeable, including in ways incompatible with a general cache. For
+    // example, HyperClockCache is not usable as a general cache because it expects
+    // only fixed-size block cache keys, but this limitation is not yet reflected
+    // in the API function signatures.
+    // * Phase 1 (done) - Make both BlockCache and RowCache aliases for Cache,
+    // and make a factory function for row caches. Encourage users of row_cache
+    // (not common) to switch to the factory function for row caches.
+    // * Phase 2 - Split off RowCache as its own class, removing secondary
+    // cache support features and more from the API to simplify it. Between Phase 1
+    // and Phase 2 users of row_cache will need to update their code. Any time
+    // after Phase 2, the block cache and row cache APIs can become more specialized
+    // in ways incompatible with general caches.
+    // * Phase 3 - Move existing RocksDB uses of Cache to BlockCache, and deprecate
+    // (but not yet remove) Cache as an alias for BlockCache.
     using BlockCache = Cache;
     using RowCache = Cache;
 
+    // Classifications of block cache entries.
+    //
+    // Developer notes: Adding a new enum to this class requires corresponding
+    // updates to `kCacheEntryRoleToCamelString` and
+    // `kCacheEntryRoleToHyphenString`. Do not add to this enum after `kMisc` since
+    // `kNumCacheEntryRoles` assumes `kMisc` comes last.
     enum class CacheEntryRole
     {
+        // Block-based table data block
         kDataBlock,
+        // Block-based table filter block (full or partitioned)
         kFilterBlock,
+        // Block-based table metadata block for partitioned filter
         kFilterMetaBlock,
+        // OBSOLETE / DEPRECATED: old/removed block-based filter
         kDeprecatedFilterBlock,
+        // Block-based table index block
         kIndexBlock,
+        // Other kinds of block-based table block
         kOtherBlock,
+        // WriteBufferManager's charge to account for its memtable usage
         kWriteBuffer,
+        // Compression dictionary building buffer's charge to account for
+        // its memory usage
         kCompressionDictionaryBuildingBuffer,
+        // Filter's charge to account for
+        // (new) bloom and ribbon filter construction's memory usage
         kFilterConstruction,
+        // BlockBasedTableReader's charge to account for its memory usage
         kBlockBasedTableReader,
+        // FileMetadata's charge to account for its memory usage
         kFileMetadata,
+        // Blob value (when using the same cache as block cache and blob cache)
         kBlobValue,
+        // Blob cache's charge to account for its memory usage (when using a
+        // separate block cache and blob cache)
         kBlobCache,
+        // Default bucket, for miscellaneous cache entries. Do not use for
+        // entries that could potentially add up to large usage.
         kMisc,
     };
 
     constexpr uint32_t kNumCacheEntryRoles =
         static_cast<uint32_t>(CacheEntryRole::kMisc) + 1;
 
+    // Obtain a hyphen-separated, lowercase name of a `CacheEntryRole`.
     const std::string &GetCacheEntryRoleName(CacheEntryRole);
 
+    // A fast bit set for CacheEntryRoles
     using CacheEntryRoleSet = SmallEnumSet<CacheEntryRole, CacheEntryRole::kMisc>;
 
+    // For use with `GetMapProperty()` for property
+    // `DB::Properties::kBlockCacheEntryStats`. On success, the map will
+    // be populated with all keys that can be obtained from these functions.
     struct BlockCacheEntryStatsMapKeys
     {
         static const std::string &CacheId();
@@ -60,31 +106,82 @@ namespace XIAODB_NAMESPACE
 
     enum CacheMetadataChargePolicy
     {
+        // Only the `charge` of each entry inserted into a Cache counts against
+        // the `capacity`
         kDontChargeCacheMetadata,
-
+        // In addition to the `charge`, the approximate space overheads in the
+        // Cache (in bytes) also count against `capacity`. These space overheads
+        // are for supporting fast Lookup and managing the lifetime of entries.
         kFullChargeCacheMetadata
     };
     const CacheMetadataChargePolicy kDefaultCacheMetadataChargePolicy =
         kFullChargeCacheMetadata;
 
+    // Options shared betweeen various cache implementations that
+    // divide the key space into shards using hashing.
     struct ShardedCacheOptions
     {
+        // Capacity of the cache, in the same units as the `charge` of each entry.
+        // This is typically measured in bytes, but can be a different unit if using
+        // kDontChargeCacheMetadata.
         size_t capacity = 0;
 
+        // Cache is sharded into 2^num_shard_bits shards, by hash of key.
+        // If < 0, a good default is chosen based on the capacity and the
+        // implementation. (Mutex-based implementations are much more reliant
+        // on many shards for parallel scalability.)
         int num_shard_bits = -1;
 
+        // If strict_capacity_limit is set, Insert() will fail if there is not
+        // enough capacity for the new entry along with all the existing referenced
+        // (pinned) cache entries. (Unreferenced cache entries are evicted as
+        // needed, sometimes immediately.) If strict_capacity_limit == false
+        // (default), Insert() never fails.
         bool strict_capacity_limit = false;
 
+        // If non-nullptr, RocksDB will use this allocator instead of system
+        // allocator when allocating memory for cache blocks.
+        //
+        // Caveat: when the cache is used as block cache, the memory allocator is
+        // ignored when dealing with compression libraries that allocate memory
+        // internally (currently only XPRESS).
         std::shared_ptr<MemoryAllocator> memory_allocator;
 
+        // See CacheMetadataChargePolicy
         CacheMetadataChargePolicy metadata_charge_policy =
             kDefaultCacheMetadataChargePolicy;
 
+        // A SecondaryCache instance to use the non-volatile tier. For a RowCache
+        // this option must be kept as default empty.
         std::shared_ptr<SecondaryCache> secondary_cache;
 
+        // See hash_seed comments below
         static constexpr int32_t kQuasiRandomHashSeed = -1;
         static constexpr int32_t kHostHashSeed = -2;
 
+        // EXPERT OPTION: Specifies how a hash seed should be determined for the
+        // cache, or specifies a specific seed (only recommended for diagnostics or
+        // testing).
+        //
+        // Background: it could be dangerous to have different cache instances
+        // access the same SST files with the same hash seed, as correlated unlucky
+        // hashing across hosts or restarts could cause a widespread issue, rather
+        // than an isolated one. For example, with smaller block caches, it is
+        // possible for large full Bloom filters in a set of SST files to be randomly
+        // clustered into one cache shard, causing mutex contention or a thrashing
+        // condition as there's little or no space left for other entries assigned to
+        // the shard. If a set of SST files is broadcast and used on many hosts, we
+        // should ensure all have an independent chance of balanced shards.
+        //
+        // Values >= 0 will be treated as fixed hash seeds. Values < 0 are reserved
+        // for methods of dynamically choosing a seed, currently:
+        // * kQuasiRandomHashSeed - Each cache created chooses a seed mostly randomly,
+        //   except that within a process, no seed is repeated until all have been
+        //   issued.
+        // * kHostHashSeed - The seed is determined based on hashing the host name.
+        //   Although this is arguably slightly worse for production reliability, it
+        //   solves the essential problem of cross-host correlation while ensuring
+        //   repeatable behavior on a host, for diagnostic purposes.
         int32_t hash_seed = kHostHashSeed;
 
         ShardedCacheOptions() {}
