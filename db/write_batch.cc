@@ -12,6 +12,7 @@
 
 #include "util/autovector.h"
 #include "db/write_batch_internal.h"
+#include "db/column_family.h"
 
 namespace XIAODB_NAMESPACE
 {
@@ -132,10 +133,10 @@ namespace XIAODB_NAMESPACE
 
     WriteBatch::WriteBatch(size_t reserved_bytes, size_t max_bytes,
                            size_t protection_bytes_per_key, size_t default_cf_ts_sz)
-        : content_flags_(0),
-          max_bytes_(max_bytes),
-          default_cf_ts_sz_(default_cf_ts_sz),
-          rep_()
+        : content_flags_(0),                   // 初始化内容标志
+          max_bytes_(max_bytes),               // 设置允许的最大字节数
+          default_cf_ts_sz_(default_cf_ts_sz), // 设置默认列族时间戳大小
+          rep_()                               // 初始化存储操作数据的缓冲区
     {
         // Currently `protection_bytes_per_key` can only be enabled at 8 bytes per entry.
         assert(protection_bytes_per_key == 0 || protection_bytes_per_key == 8);

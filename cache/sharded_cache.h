@@ -46,18 +46,18 @@ namespace XIAODB_NAMESPACE
         explicit ShardedCacheBase(const ShardedCacheOptions &opts);
         virtual ~ShardedCacheBase() = default;
 
-        int GetNumShardBits() const;
-        uint32_t GetNumShards() const;
+        int GetNumShardBits() const;   // 获取分片的位数
+        uint32_t GetNumShards() const; // 获取缓存的总分片数
 
         uint64_t NewId() override;
 
         bool HasStrictCapacityLimit() const override;
-        size_t GetCapacity() const override;
+        size_t GetCapacity() const override; // 获取缓存的总容量
         Status GetSecondaryCacheCapacity(size_t &size) const override;
         Status GetSecondaryCachePinnedUsage(size_t &size) const override;
 
         using Cache::GetUsage;
-        size_t GetUsage(Handle *handle) const override;
+        size_t GetUsage(Handle *handle) const override; // 获取某个特定缓存项的大小
         std::string GetPrintableOptions() const override;
 
         uint32_t GetHashSeed() const override { return hash_seed_; }
@@ -68,12 +68,12 @@ namespace XIAODB_NAMESPACE
         size_t ComputePerShardCapacity(size_t capacity) const;
 
     protected:
-        std::atomic<uint64_t> last_id_;
-        const uint32_t shard_mask_;
-        const uint32_t hash_seed_;
+        std::atomic<uint64_t> last_id_; // 用于生成唯一ID
+        const uint32_t shard_mask_;     // 用于分片的常量 shard_mask_ 作为一个掩码，用于根据哈希值将数据映射到不同的分片中。
+        const uint32_t hash_seed_;      // 用于hash运算的常量
 
-        bool strict_capacity_limit_;
-        size_t capacity_;
+        bool strict_capacity_limit_; // 是否有严格的容量限制
+        size_t capacity_;            // 缓存的容量
         mutable port::Mutex config_mutex_;
     };
 

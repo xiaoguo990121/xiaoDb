@@ -10,6 +10,7 @@ namespace XIAODB_NAMESPACE
 {
 
     WriteThread::WriteThread(const ImmutableDBOptions &dp_options)
+        : max_yield_usec_(db_options.enable_)
     {
     }
 }

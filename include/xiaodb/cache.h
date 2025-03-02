@@ -223,7 +223,7 @@ namespace XIAODB_NAMESPACE
 
         std::shared_ptr<Cache> MakeSharedCache() const;
 
-        std::shared_ptr<RowCache> MakeSharedCache() const;
+        std::shared_ptr<RowCache> MakeSharedRowCache() const;
     };
 
     inline std::shared_ptr<Cache> NewLRUCache(

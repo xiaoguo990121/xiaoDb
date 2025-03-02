@@ -1,7 +1,7 @@
 #pragma once
 
 #include "xiaodb/xiaodb_namespace.h"
-#include "xiaodb/type.h"
+#include "xiaodb/types.h"
 
 namespace XIAODB_NAMESPACE
 {

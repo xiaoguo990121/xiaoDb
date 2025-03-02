@@ -18,6 +18,7 @@ namespace XIAODB_NAMESPACE
     class Logger;
     class SecondaryCacheResultHandle;
     class Statistics;
+
     // A Cache maps keys to objects resident in memory, tracks reference counts
     // on those key-object entries, and is able to remove unreferenced entries
     // whenever it wants. All operations are fully thread safe except as noted.
@@ -97,12 +98,13 @@ namespace XIAODB_NAMESPACE
         // RocksDB callbacks are NOT exception-safe. A callback completing with an
         // exception can lead to undefined behavior in RocksDB, including data loss,
         // unreported corruption, deadlocks, and more.
-        using SizeCallback = size_t (*)(ObjectPtr obj);
+        using SizeCallback = size_t (*)(ObjectPtr obj); // 计算对象打的可持久化大小，用于secondary cache进行内存分配
 
         // The SaveToCallback takes an object pointer and saves the persistable
         // data into a buffer. The secondary cache may decide to not store it in a
         // contiguous buffer, in which case this callback will be called multiple
         // times with increasing offset
+        // 将对象的持久化数据保存到缓冲区
         using SaveToCallback = Status (*)(ObjectPtr from_obj, size_t from_offset,
                                           size_t length, char *out_buf);
 
@@ -111,7 +113,7 @@ namespace XIAODB_NAMESPACE
         // The Cache is responsible for copying and reclaiming space for the key,
         // but objects are managed in part using this callback. Generally a DeleterFn
         // can be nullptr if the ObjectPtr does not need destruction (e.g. nullptr or
-        // pointer into static data).
+        // pointer into static data). 用于删除缓存对象，通常调用对象的析构函数。
         using DeleterFn = void (*)(ObjectPtr obj, MemoryAllocator *allocator);
 
         // The CreateCallback is takes in a buffer from the secondary  cache and
@@ -123,7 +125,7 @@ namespace XIAODB_NAMESPACE
         // should copy the contents into its own buffer. The CreateContext* is
         // provided by Lookup and may be used to follow DB- or CF-specific settings.
         // In case of some error, non-OK is returned and the caller should ignore
-        // any result in out_obj. (The implementation must clean up after itself.)
+        // any result in out_obj. (The implementation must clean up after itself.)从 Secondary Cache 读取数据并恢复成对象
         using CreateCallback = Status (*)(const Slice &data, CompressionType type,
                                           CacheTier source, CreateContext *context,
                                           MemoryAllocator *allocator,

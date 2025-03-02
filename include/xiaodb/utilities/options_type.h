@@ -17,7 +17,7 @@ namespace XIAODB_NAMESPACE
     // The underlying "class/type" of the option.
     // This enum is used to determine how the option should
     // be converted to/from strings and compared.
-    enum class OptionType
+    enum class OptionType // 表示选项的底层“类/类型”
     {
         kBoolean,
         kInt,
@@ -50,7 +50,7 @@ namespace XIAODB_NAMESPACE
         kUnknown,
     };
 
-    enum class OptionVerificationType
+    enum class OptionVerificationType // 表示选项验证的不同类型
     {
         kNormal,
         kByName,              // The option is pointer typed so we can only verify
@@ -237,9 +237,10 @@ namespace XIAODB_NAMESPACE
 
     // A struct for storing constant option information such as option name,
     // option type, and offset.
-    class OptionTypeInfo
-    {
-    public:
+    class OptionTypeInfo // 主要用于存储常量选项信息，如选项名称、选项类型和偏移量等
+    {                    // 它提供了多种静态方法来创建不同类型（如枚举、结构体、数组、
+                         // 向量、字符串映射等）的OptionTypeInfo 对象，还提供了一系列成员函数
+    public:              // 用于设置和选取选项信息、解析、序列化、比较、准备和验证选项等操作
         OptionTypeInfo(
             int offset, OptionType type,
             OptionVerificationType verification = OptionVerificationType::kNormal,
@@ -266,14 +267,18 @@ namespace XIAODB_NAMESPACE
         //
         // @param offset The offset in the option object for this enum
         // @param map The string to enum mapping for this enum
+        // 创建枚举类型的OptionTypeInfo
         template <typename T>
         static OptionTypeInfo Enum(
             int offset, const std::unordered_map<std::string, T> *const map,
             OptionTypeFlags flags = OptionTypeFlags::kNone,
             OptionVerificationType verification = OptionVerificationType::kNormal)
         {
+            // 创建一个 OptionTypeInfo 对象，指定偏移量、类型为枚举、验证类型和标志
             OptionTypeInfo info(offset, OptionType::kEnum, verification, flags);
             info.SetParseFunc(
+                // 使用map参数将输入的字符串转换为对应的枚举值，如果值在映射表中找到，
+                // 则更新addr为对应的映射表条目
                 // Uses the map argument to convert the input string into
                 // its corresponding enum value.  If value is found in the map,
                 // addr is updated to the corresponding map entry.
@@ -1044,19 +1049,19 @@ namespace XIAODB_NAMESPACE
         constexpr static const char *kIdPropSuffix() { return ".id"; }
 
     private:
-        int offset_;
+        int offset_; // 选项在父结构体中的内存偏移量，用于直接访问成员变量
 
         // The optional function to convert a string to its representation
-        ParseFunc parse_func_;
+        ParseFunc parse_func_; // 解析函数
 
         // The optional function to convert a value to its string representation
-        SerializeFunc serialize_func_;
+        SerializeFunc serialize_func_; // 序列化函数
 
         // The optional function to match two option values
-        EqualsFunc equals_func_;
+        EqualsFunc equals_func_; // 比较函数
 
-        PrepareFunc prepare_func_;
-        ValidateFunc validate_func_;
+        PrepareFunc prepare_func_;   // 准备函数
+        ValidateFunc validate_func_; // 验证函数
         OptionType type_;
         OptionVerificationType verification_;
         OptionTypeFlags flags_;

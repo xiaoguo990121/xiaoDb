@@ -4,7 +4,7 @@
 
 #include "xiaodb/unique_id.h"
 
-namespace XIAODB_NAMESAPCE
+namespace XIAODB_NAMESPACE
 {
     using UniqueId64x2 = std::array<uint64_t, 2>;
 

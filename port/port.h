@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-
+#define OS_WIN
 #if defined(XIAODB_PLATFORM_POSIX)
 #include "port/port_posix.h"
 #elif defined(OS_WIN)

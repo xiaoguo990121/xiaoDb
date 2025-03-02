@@ -98,6 +98,28 @@ namespace XIAODB_NAMESPACE
         return status;
     }
 
+    /*********************************************************************************/
+    /*                                                                               */
+    /*       Methods for Retrieving Options from Configurables */
+    /*                                                                               */
+    /*********************************************************************************/
+
+    const void *Configurable::GetOptionsPtr(const std::string &name) const
+    {
+        for (const auto &o : options_)
+        {
+            if (o.name == name)
+            {
+                return ApplyOffset(this, o.opt_offset);
+            }
+        }
+        return nullptr;
+    }
+
+    std::string Configurable::GetOptionName(const std::string &opt_name) const
+    {
+        return opt_name;
+    }
     //*************************************************************************
     //
     //       Methods for Configuring Options from Strings/Name-Value Pairs/Maps
@@ -125,7 +147,7 @@ namespace XIAODB_NAMESPACE
         const std::unordered_map<std::string, std::string> &opts_map,
         std::unordered_map<std::string, std::string> *unused)
     {
-        std::string curr_opts;
+        std::string curr_opts; // 用于存储当前配置的字符串表示
         Status s;
         if (!opts_map.empty())
         {
@@ -639,6 +661,7 @@ namespace XIAODB_NAMESPACE
         return Status::NotFound("Cannot find option: ", short_name);
     }
 
+    // 将Configurable对象中的可序列化选项按照特定格式序列化为字符串，并存储在result所执向的字符串中
     Status ConfigurableHelper::SerializeOptions(const ConfigOptions &config_options,
                                                 const Configurable &configurable,
                                                 const std::string &prefix,

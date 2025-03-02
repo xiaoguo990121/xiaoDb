@@ -21,9 +21,9 @@ namespace XIAODB_NAMESPACE
 
     struct SavePoint
     {
-        size_t size;
-        uint32_t count;
-        uint32_t content_flags;
+        size_t size;            // 记录当前WriteBatch中数据的大小
+        uint32_t count;         // 记录当前batch中的操作数
+        uint32_t content_flags; // 额外的标志位，用于记状态
 
         SavePoint() : size(0), count(0), content_flags(0) {}
 

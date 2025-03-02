@@ -76,6 +76,8 @@
         "ranges": "cpp",
         "span": "cpp",
         "set": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "fstream": "cpp",
+        "variant": "cpp"
     }
 }

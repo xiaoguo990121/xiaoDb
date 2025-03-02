@@ -114,6 +114,9 @@ namespace XIAODB_NAMESPACE
         //       parsed.  This can also be returned if PrepareOptions encounters an
         //       error.
         // @see ConfigOptions for a description of the controls.
+        // 基于输入的参数来配置当前类的选项。如果配置成功，对象会根据opt_map中的设置进行更新
+        // 如果配置失败，会尝试将对象恢复到原始状态，但恢复后的状态可能不是完全的原始状态，可能
+        // 只是一个等效状态例如，如果对象包含一个 shared_ptr 类型的选项，恢复后的 shared_ptr 可能不是原来的那个，而是一个具有相同大小的副本。
         Status ConfigureFromMap(
             const ConfigOptions &config_options,
             const std::unordered_map<std::string, std::string> &opt_map);

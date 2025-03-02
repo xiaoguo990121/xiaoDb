@@ -25,6 +25,7 @@ namespace XIAODB_NAMESPACE
         // Use this cache key as a Slice (byte order is endianness-dependent)
         inline Slice AsSlice() const
         {
+            // static_assert是编译时断言，用于检查编译时条件，所有编译模式下等会生效
             static_assert(sizeof(*this) == 16, "Standardized on 16-byte cache key");
             assert(!IsEmpty());
             return Slice(reinterpret_cast<const char *>(this), sizeof(*this));
@@ -71,6 +72,7 @@ namespace XIAODB_NAMESPACE
 
         // Constructs an OffsetableCacheKey with the given information about a file.
         // This constructor never generates an "empty" base key.
+        // 根据给定的文件信息构造
         OffsetableCacheKey(const std::string &db_id, const std::string &db_session_id,
                            uint64_t file_number);
 

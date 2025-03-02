@@ -14,7 +14,7 @@
 #include "xiaodb/port_defs.h"
 #include "xiaodb/status.h"
 #include "xiaodb/thread_status.h"
-#include "xiaodb/type.h"
+#include "xiaodb/types.h"
 
 #ifdef _WIN32
 #undef DeleteFile
@@ -90,7 +90,7 @@ namespace XIAODB_NAMESPACE
     {
     public:
         static const char *kDefaultName() { return "DefaultEnv"; }
-        struct FileAttrbutes
+        struct FileAttributes
         {
             std::string name;
             uint64_t size_bytes;
